@@ -118,33 +118,33 @@ WHERE list_price > 1000;
 ```sql
 UPDATE productos_u4 SET product_status = 'obsolete' WHERE product_id = 1797;
 ```
-
+![alt text](img/11.png)
 **2. Múltiple: Cambia el min_price a 50 y el list_price a 80 del producto 7000.**
 ```sql
 UPDATE productos_u4 SET min_price = 50, list_price = 80 WHERE product_id = 7000;
 ```
-
+![alt text](img/12.png)
 **3. Filtro Simple: Incrementa en 10 el precio de todos los productos de la categoría 12.**
 ```sql
 UPDATE productos_u4 SET list_price = list_price + 10 WHERE category_id = 12;
 ```
-
+![alt text](img/13.png)
 **4. Uso de LIKE: Pon en 'discontinued' todos los productos cuyo nombre empiece por 'Software%'.**
 ```sql
 UPDATE productos_u4 SET product_status = 'discontinued'
 WHERE product_name LIKE 'Software%';
 ```
-
+![alt text](img/14.png)
 **5. Basado en NULL: Asigna un min_price de 5 a todos los productos que tengan ese campo como nulo.**
 ```sql
 UPDATE productos_u4 SET min_price = 5 WHERE min_price IS NULL;
 ```
-
+![alt text](img/15.png)
 **6. Cálculo Porcentual: Rebaja un 20% el precio de los productos con weight_class = 5.**
 ```sql
 UPDATE productos_u4 SET list_price = list_price * 0.80 WHERE weight_class = 5;
 ```
-
+![alt text](img/16.png)
 **7. Subconsulta Simple: Sube el precio 100€ a todos los productos que pertenezcan a la categoría llamada 'Software/Other' (buscando el ID en categories_tab).**
 ```sql
 UPDATE productos_u4
@@ -154,37 +154,35 @@ WHERE category_id = (
     WHERE category_name = 'Software/Other'
 );
 ```
-
+![alt text](img/17.png)
 **8. Update Correlacionado: Actualiza el min_price de productos_u4 para que sea igual al precio más bajo registrado para ese producto en la tabla order_items.**
 ```sql
-UPDATE productos_u4 p
-SET p.min_price = (
-    SELECT NVL(MIN(oi.unit_price), p.min_price)
-    FROM OE.ORDER_ITEMS oi
-    WHERE oi.product_id = p.product_id
-)
-WHERE EXISTS (
-    SELECT 1 FROM OE.ORDER_ITEMS oi WHERE oi.product_id = p.product_id
+UPDATE productos_u4
+SET min_price = (
+    SELECT MIN(unit_price)
+    FROM OE.ORDER_ITEMS
+    WHERE product_id = productos_u4.product_id
 );
 ```
-
+![alt text](img/18.png)
 **9. Condición de Existencia: Cambia el estado a 'available' solo de aquellos productos que tengan al menos 1 unidad en el inventario_u4.**
 ```sql
-UPDATE productos_u4 p
-SET p.product_status = 'available'
-WHERE EXISTS (
-    SELECT 1 FROM inventario_u4 i WHERE i.product_id = p.product_id
+UPDATE productos_u4
+SET product_status = 'available'
+WHERE product_id IN (
+    SELECT product_id FROM inventario_u4
 );
 ```
-
+![alt text](img/19.png)
 **10. Lógica Compleja: Si un producto tiene un list_price superior a la media global, redúcelo un 5%.**
 ```sql
 UPDATE productos_u4
 SET list_price = list_price * 0.95
 WHERE list_price > (SELECT AVG(list_price) FROM productos_u4);
 ```
+![alt text](img/20.png)
 
-📎 [paso3_update.sql](paso3_update.sql)
+[paso3_update.sql](paso3_update.sql)
 
 ---
 
@@ -194,17 +192,17 @@ WHERE list_price > (SELECT AVG(list_price) FROM productos_u4);
 ```sql
 DELETE FROM productos_u4 WHERE product_id = 7000;
 ```
-
+![alt text](img/21.png)
 **2. Filtro de Texto: Borra todos los productos que contengan la palabra 'Test' en su descripción.**
 ```sql
 DELETE FROM productos_u4 WHERE product_description LIKE '%Test%';
 ```
-
+![alt text](img/22.png)
 **3. Rango Numérico: Borra los productos con list_price entre 0 y 1.**
 ```sql
 DELETE FROM productos_u4 WHERE list_price BETWEEN 0 AND 1;
 ```
-
+![alt text](img/23.png)
 **4. Estado y Categoría: Borra productos de la categoría 10 que estén 'under development'.**
 ```sql
 DELETE FROM productos_u4
@@ -218,7 +216,7 @@ WHERE NOT EXISTS (
     SELECT 1 FROM inventario_u4 i WHERE i.product_id = p.product_id
 );
 ```
-
+![alt text](img/25.png)
 **6. Subconsulta de Agregación: Borra los productos cuyo min_price sea el más bajo de toda la tabla.**
 ```sql
 DELETE FROM productos_u4
@@ -232,7 +230,7 @@ WHERE NOT EXISTS (
     SELECT 1 FROM OE.ORDER_ITEMS oi WHERE oi.product_id = p.product_id
 );
 ```
-
+![alt text](img/27.png)
 **8. Basado en Almacén: Borra del inventario todos los registros de productos que pertenezcan a almacenes situados en 'Japan' (requiere join con warehouses y locations).**
 ```sql
 DELETE FROM inventario_u4
@@ -244,7 +242,7 @@ WHERE warehouse_id IN (
     WHERE c.country_name = 'Japan'
 );
 ```
-
+![alt text](img/28.png)
 **9. Doble Condición Subquery: Borra productos cuya categoría tenga menos de 5 productos registrados.**
 ```sql
 DELETE FROM productos_u4
@@ -255,14 +253,14 @@ WHERE category_id IN (
     HAVING COUNT(*) < 5
 );
 ```
-
+![alt text](img/29.png)
 **10. Limpieza Total: Borra todos los registros de productos_u4 que insertaste en el paso 2 (IDs entre 7000 y 8000).**
 ```sql
 DELETE FROM productos_u4 WHERE product_id BETWEEN 7000 AND 8000;
 COMMIT;
 ```
 
-📎 [paso4_delete.sql](paso4_delete.sql)
+[paso4_delete.sql](paso4_delete.sql)
 
 ---
 
@@ -278,7 +276,7 @@ INSERT INTO cuenta_bancaria VALUES (1, 'Usuario A', 1000);
 INSERT INTO cuenta_bancaria VALUES (2, 'Usuario B', 2000);
 COMMIT;
 ```
-
+![alt text](img/31.png)
 ---
 
 ### Escenario 1: El Principio de Atomicidad (All-or-Nothing)
@@ -287,21 +285,19 @@ Simularemos una transferencia bancaria que falla a mitad de proceso.
 
 1. Script que resta 500€ de la cuenta 1 e intenta sumar 500€ a una cuenta que no existe (ID 99):
 ```sql
-BEGIN
-    UPDATE cuenta_bancaria SET saldo = saldo - 500 WHERE id = 1;
-    UPDATE cuenta_bancaria SET saldo = saldo + 500 WHERE id = 99;
-    IF SQL%ROWCOUNT = 0 THEN
-        RAISE_APPLICATION_ERROR(-20001, 'Cuenta destino no existe');
-    END IF;
-    COMMIT;
-EXCEPTION
-    WHEN OTHERS THEN
-        ROLLBACK;
-        DBMS_OUTPUT.PUT_LINE('Error: ' || SQLERRM);
-END;
-/
-```
 
+UPDATE cuenta_bancaria SET saldo = saldo - 500 WHERE id = 1;
+
+
+UPDATE cuenta_bancaria SET saldo = saldo + 500 WHERE id = 99;
+
+
+SELECT * FROM cuenta_bancaria;
+
+
+ROLLBACK;
+```
+![alt text](img/32.png)
 2. Verificación:
 ```sql
 SELECT * FROM cuenta_bancaria;
@@ -388,4 +384,4 @@ SELECT * FROM cuenta_bancaria;
 
 5. El Usuario 2 **no vuelve**. En Oracle, cualquier sentencia DDL (`CREATE`, `ALTER`, `DROP`, `TRUNCATE`) emite un COMMIT implícito antes de ejecutarse. Esto confirma automáticamente cualquier transacción DML abierta, por lo que el ROLLBACK posterior ya no tiene ningún efecto sobre el DELETE.
 
-📎 [paso5_transacciones.sql](paso5_transacciones.sql)
+ [paso5_transacciones.sql](paso5_transacciones.sql)
