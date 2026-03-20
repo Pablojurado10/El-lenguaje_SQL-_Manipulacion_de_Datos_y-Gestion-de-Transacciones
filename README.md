@@ -307,7 +307,7 @@ SELECT * FROM cuenta_bancaria;
 ```sql
 ROLLBACK;
 ```
-
+![alt text](img/33.png)
 4. Es vital que estas dos operaciones vayan en un bloque con ROLLBACK porque una transferencia bancaria es una operación atómica: si el abono falla, el cargo también debe deshacerse. De lo contrario el dinero desaparece sin llegar a ningún destino, corrompiendo la integridad de los datos.
 
 ---
@@ -319,24 +319,24 @@ ROLLBACK;
 UPDATE cuenta_bancaria SET saldo = saldo * 1.10;
 SAVEPOINT sp_subida;
 ```
-
+![alt text](img/34.png)
 2. Insertar nuevo titular y crear savepoint:
 ```sql
 INSERT INTO cuenta_bancaria VALUES (3, 'Usuario C', 500);
 SAVEPOINT sp_nuevo_usuario;
 ```
-
+![alt text](img/35.png)
 3. Borrar accidentalmente todos los usuarios:
 ```sql
 DELETE FROM cuenta_bancaria;
 ```
-
+![alt text](img/36.png)
 4. Recuperación:
 ```sql
 ROLLBACK TO SAVEPOINT sp_nuevo_usuario;
 SELECT * FROM cuenta_bancaria;
 ```
-
+![alt text](img/37.png)
 ---
 
 ### Escenario 3: Bloqueos y Tiempo de Espera
@@ -355,7 +355,7 @@ UPDATE cuenta_bancaria SET saldo = 5000 WHERE id = 1;
 ```sql
 COMMIT;
 ```
-
+![alt text](img/38.png)
 T2 se desbloquea y aplica su UPDATE.
 
 ---
@@ -366,12 +366,12 @@ T2 se desbloquea y aplica su UPDATE.
 ```sql
 DELETE FROM cuenta_bancaria WHERE id = 2;
 ```
-
+![alt text](img/39.png)
 2. Sin hacer COMMIT, crear una tabla de log:
 ```sql
 CREATE TABLE log_errores (msg VARCHAR2(100));
 ```
-
+![alt text](img/40.png)
 3. Intentar ROLLBACK:
 ```sql
 ROLLBACK;
@@ -381,7 +381,7 @@ ROLLBACK;
 ```sql
 SELECT * FROM cuenta_bancaria;
 ```
-
+![alt text](img/41.png)
 5. El Usuario 2 **no vuelve**. En Oracle, cualquier sentencia DDL (`CREATE`, `ALTER`, `DROP`, `TRUNCATE`) emite un COMMIT implícito antes de ejecutarse. Esto confirma automáticamente cualquier transacción DML abierta, por lo que el ROLLBACK posterior ya no tiene ningún efecto sobre el DELETE.
 
  [paso5_transacciones.sql](paso5_transacciones.sql)

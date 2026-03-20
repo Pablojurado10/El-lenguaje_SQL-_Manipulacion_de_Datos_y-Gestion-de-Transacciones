@@ -46,4 +46,4 @@ UPDATE productos_u4
 SET list_price = list_price * 0.95
 WHERE list_price > (SELECT AVG(list_price) FROM productos_u4);
 
-COMMIT;
+

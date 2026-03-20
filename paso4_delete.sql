@@ -51,4 +51,3 @@ WHERE category_id IN (
 -- 10. Limpieza Total
 DELETE FROM productos_u4 WHERE product_id BETWEEN 7000 AND 8000;
 
-COMMIT;
